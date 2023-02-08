@@ -6,8 +6,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Install Ruby
-        run: sudo apt-get install ruby
       - uses: actions/checkout@v3
       - name: Set up Go
         uses: actions/setup-go@v3
