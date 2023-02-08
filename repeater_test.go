@@ -26,23 +26,22 @@ const dummySsh = `#!/usr/bin/ruby
 $stderr << "Hello\r\n"
 `
 
-func setupDummyEnv(t *testing.T) (string, func()) {
+func setupDummyEnv(t *testing.T) string {
+	t.Helper()
 	log.SetOutput(io.Discard)
 	tmpDir := t.TempDir()
-	pathBackup := os.Getenv("PATH")
-	os.Setenv("PATH", tmpDir)
+	t.Setenv("PATH", tmpDir)
 	waitTimesBackup := waitTimes
 	waitTimes = []time.Duration{0 * time.Second, 500 * time.Millisecond, 3 * time.Second}
 
-	return tmpDir, func() {
+	t.Cleanup(func() {
 		waitTimes = waitTimesBackup
-		os.Setenv("PATH", pathBackup)
-	}
+	})
+	return tmpDir
 }
 
 func TestRepeaterNoPowerShell(t *testing.T) {
-	_, teardown := setupDummyEnv(t)
-	defer teardown()
+	setupDummyEnv(t)
 
 	_, err := newRepeater(context.Background())
 	if err.Error() != "failed to invoke PowerShell.exe 3 times; give up" {
@@ -51,8 +50,7 @@ func TestRepeaterNoPowerShell(t *testing.T) {
 }
 
 func TestRepeaterBrokenPowerShell(t *testing.T) {
-	tmpDir, teardown := setupDummyEnv(t)
-	defer teardown()
+	tmpDir := setupDummyEnv(t)
 
 	os.WriteFile(filepath.Join(tmpDir, "PowerShell.exe"), []byte(dummyBrokenPowerShell), 0777)
 	_, err := newRepeater(context.Background())
@@ -62,8 +60,7 @@ func TestRepeaterBrokenPowerShell(t *testing.T) {
 }
 
 func TestRepeaterNormal(t *testing.T) {
-	tmpDir, teardown := setupDummyEnv(t)
-	defer teardown()
+	tmpDir := setupDummyEnv(t)
 
 	os.WriteFile(filepath.Join(tmpDir, "PowerShell.exe"), []byte(dummyEchoPowerShell), 0777)
 
@@ -89,8 +86,7 @@ func TestRepeaterNormal(t *testing.T) {
 }
 
 func TestSshVersionNoSsh(t *testing.T) {
-	_, teardown := setupDummyEnv(t)
-	defer teardown()
+	setupDummyEnv(t)
 
 	s := getWinSshVersion()
 	if s != "" {
@@ -99,8 +95,7 @@ func TestSshVersionNoSsh(t *testing.T) {
 }
 
 func TestSshVersionNormal(t *testing.T) {
-	tmpDir, teardown := setupDummyEnv(t)
-	defer teardown()
+	tmpDir := setupDummyEnv(t)
 
 	os.WriteFile(filepath.Join(tmpDir, "ssh.exe"), []byte(dummySsh), 0777)
 

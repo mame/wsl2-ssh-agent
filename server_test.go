@@ -11,8 +11,10 @@ import (
 	"time"
 )
 
-func setupDummyServer(t *testing.T) (string, func()) {
-	tmpDir, teardown := setupDummyEnv(t)
+func setupDummyServer(t *testing.T) string {
+	t.Helper()
+
+	tmpDir := setupDummyEnv(t)
 
 	dummyUpcaseEchoPowerShell := `#!/usr/bin/ruby
 require "socket"
@@ -43,16 +45,16 @@ end
 		close(done)
 	}()
 
-	return path, func() {
+	t.Cleanup(func() {
 		cancel()
 		<-done
-		teardown()
-	}
+	})
+
+	return path
 }
 
 func TestServerNormal(t *testing.T) {
-	path, teardown := setupDummyServer(t)
-	defer teardown()
+	path := setupDummyServer(t)
 
 	sock, err := net.Dial("unix", path)
 	if err != nil {
@@ -73,8 +75,7 @@ func TestServerNormal(t *testing.T) {
 }
 
 func TestServerOpenSSHExtension(t *testing.T) {
-	path, teardown := setupDummyServer(t)
-	defer teardown()
+	path := setupDummyServer(t)
 
 	sock, err := net.Dial("unix", path)
 	if err != nil {
@@ -95,8 +96,7 @@ func TestServerOpenSSHExtension(t *testing.T) {
 }
 
 func TestServerMultipleAccess(t *testing.T) {
-	path, teardown := setupDummyServer(t)
-	defer teardown()
+	path := setupDummyServer(t)
 
 	sock1, err := net.Dial("unix", path)
 	if err != nil {
@@ -133,8 +133,7 @@ func TestServerMultipleAccess(t *testing.T) {
 }
 
 func TestServerRestart(t *testing.T) {
-	path, teardown := setupDummyServer(t)
-	defer teardown()
+	path := setupDummyServer(t)
 
 	sock, err := net.Dial("unix", path)
 	if err != nil {
@@ -183,8 +182,7 @@ func TestServerRestart(t *testing.T) {
 }
 
 func TestServerFail(t *testing.T) {
-	path, teardown := setupDummyServer(t)
-	defer teardown()
+	path := setupDummyServer(t)
 
 	sock, err := net.Dial("unix", path)
 	if err != nil {
@@ -205,8 +203,7 @@ func TestServerFail(t *testing.T) {
 }
 
 func TestServerStuck(t *testing.T) {
-	path, teardown := setupDummyServer(t)
-	defer teardown()
+	path := setupDummyServer(t)
 
 	sock, err := net.Dial("unix", path)
 	if err != nil {
