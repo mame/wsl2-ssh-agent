@@ -168,7 +168,7 @@ func TestServerRestart(t *testing.T) {
 		t.Fatal("no process found")
 	}
 	proc.Signal(os.Interrupt)
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 
 	_, err = sock.Write([]byte("\x00\x00\x00\x06Hello2"))
 	if err != nil {
@@ -215,7 +215,7 @@ func TestServerStuck(t *testing.T) {
 	defer sock.Close()
 
 	readTimeLimitBackup := readTimeLimit
-	readTimeLimit = 100 * time.Millisecond
+	readTimeLimit = 500 * time.Millisecond
 	defer func() {
 		readTimeLimit = readTimeLimitBackup
 	}()

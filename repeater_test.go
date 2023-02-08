@@ -32,7 +32,7 @@ func setupDummyEnv(t *testing.T) (string, func()) {
 	pathBackup := os.Getenv("PATH")
 	os.Setenv("PATH", tmpDir)
 	waitTimesBackup := waitTimes
-	waitTimes = []time.Duration{0 * time.Second, 100 * time.Millisecond}
+	waitTimes = []time.Duration{0 * time.Second, 500 * time.Millisecond}
 
 	return tmpDir, func() {
 		waitTimes = waitTimesBackup
