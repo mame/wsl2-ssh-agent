@@ -32,7 +32,7 @@ func setupDummyEnv(t *testing.T) (string, func()) {
 	pathBackup := os.Getenv("PATH")
 	os.Setenv("PATH", tmpDir)
 	waitTimesBackup := waitTimes
-	waitTimes = []time.Duration{0 * time.Second, 500 * time.Millisecond}
+	waitTimes = []time.Duration{0 * time.Second, 500 * time.Millisecond, 3 * time.Second}
 
 	return tmpDir, func() {
 		waitTimes = waitTimesBackup
@@ -45,7 +45,7 @@ func TestRepeaterNoPowerShell(t *testing.T) {
 	defer teardown()
 
 	_, err := newRepeater(context.Background())
-	if err.Error() != "failed to invoke PowerShell.exe 2 times; give up" {
+	if err.Error() != "failed to invoke PowerShell.exe 3 times; give up" {
 		t.Errorf("should fail")
 	}
 }
@@ -56,7 +56,7 @@ func TestRepeaterBrokenPowerShell(t *testing.T) {
 
 	os.WriteFile(filepath.Join(tmpDir, "PowerShell.exe"), []byte(dummyBrokenPowerShell), 0777)
 	_, err := newRepeater(context.Background())
-	if err.Error() != "failed to invoke PowerShell.exe 2 times; give up" {
+	if err.Error() != "failed to invoke PowerShell.exe 3 times; give up" {
 		t.Errorf("should fail")
 	}
 }
