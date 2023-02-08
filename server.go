@@ -142,7 +142,10 @@ func handleRequest(rep *repeater, req *request) error {
 	log.Printf("[L] -> [W] (%d B)", len(req.data))
 
 	if out, ok := rep.out.(deadliner); ok {
-		out.SetReadDeadline(time.Now().Add(readTimeLimit))
+		err = out.SetReadDeadline(time.Now().Add(readTimeLimit))
+		if err != nil {
+			log.Printf("failed to set timeout: %s", err)
+		}
 	}
 
 	resp, err := readMessage(rep.out)
@@ -153,7 +156,10 @@ func handleRequest(rep *repeater, req *request) error {
 	log.Printf("[L] <- [W] (%d B)", len(resp))
 
 	if out, ok := rep.out.(deadliner); ok {
-		out.SetReadDeadline(time.Time{})
+		err = out.SetReadDeadline(time.Time{})
+		if err != nil {
+			log.Printf("failed to set timeout: %s", err)
+		}
 	}
 
 	req.resultChannel <- resp
@@ -196,7 +202,11 @@ func (s *server) client(wg *sync.WaitGroup, ctx context.Context, sshClient net.C
 			log.Printf("failed to get result")
 			break
 		}
-		sshClient.Write(resp)
+		_, err = sshClient.Write(resp)
+		if err != nil {
+			log.Printf("failed to write to ssh: %s", err)
+			break
+		}
 		log.Printf("ssh <- [L] (%d B)", len(resp))
 	}
 	log.Printf("ssh: closed")
@@ -218,7 +228,10 @@ func readMessage(from io.Reader) ([]byte, error) {
 	}
 
 	var len uint32
-	binary.Read(bytes.NewReader(header), binary.BigEndian, &len)
+	err = binary.Read(bytes.NewReader(header), binary.BigEndian, &len)
+	if err != nil {
+		log.Fatal("unreachable")
+	}
 
 	body := make([]byte, len)
 	_, err = io.ReadFull(from, body)

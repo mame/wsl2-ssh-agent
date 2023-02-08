@@ -32,7 +32,10 @@ loop do
 end
 `
 
-	os.WriteFile(filepath.Join(tmpDir, "PowerShell.exe"), []byte(dummyUpcaseEchoPowerShell), 0777)
+	err := os.WriteFile(filepath.Join(tmpDir, "PowerShell.exe"), []byte(dummyUpcaseEchoPowerShell), 0777)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	path := filepath.Join(tmpDir, "tmp.sock")
 	s := newServer(path, true)
@@ -166,7 +169,10 @@ func TestServerRestart(t *testing.T) {
 	if err != nil {
 		t.Fatal("no process found")
 	}
-	proc.Signal(os.Interrupt)
+	err = proc.Signal(os.Interrupt)
+	if err != nil {
+		t.Fatal("failed to kill the process")
+	}
 	time.Sleep(500 * time.Millisecond)
 
 	_, err = sock.Write([]byte("\x00\x00\x00\x06Hello2"))

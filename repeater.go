@@ -50,7 +50,12 @@ func newRepeater(ctx context.Context) (*repeater, error) {
 		}
 
 		// write the source code
-		io.WriteString(in, repeaterPs1)
+		_, err = io.WriteString(in, repeaterPs1)
+		if err != nil {
+			log.Printf("failed to give [W] the source code: %s", err)
+			terminate(cmd)
+			continue
+		}
 
 		done := make(chan bool)
 
@@ -72,17 +77,23 @@ func newRepeater(ctx context.Context) (*repeater, error) {
 		}
 
 		log.Printf("PowerShell.exe does not respond in %v", limit)
-		cmd.Process.Kill()
-		cmd.Wait()
+		terminate(cmd)
 	}
 
 	return nil, fmt.Errorf("failed to invoke PowerShell.exe %d times; give up", len(waitTimes))
 }
 
+func terminate(cmd *exec.Cmd) {
+	err := cmd.Process.Kill()
+	if err != nil {
+		log.Fatal(err)
+	}
+	cmd.Wait() //nolint:errcheck
+}
+
 func (rep *repeater) terminate() {
 	rep.in.Close()
-	rep.cmd.Process.Kill()
-	rep.cmd.Wait()
+	terminate(rep.cmd)
 }
 
 func getWinSshVersion() string {

@@ -16,13 +16,12 @@ import (
 )
 
 type config struct {
-	socketPath              string
-	foreground              bool
-	verbose                 bool
-	stop                    bool
-	logFile                 string
-	version                 bool
-	ignoreOpenSSHExtensions bool
+	socketPath string
+	foreground bool
+	verbose    bool
+	stop       bool
+	logFile    string
+	version    bool
 }
 
 var version = "(development version)"
@@ -120,7 +119,7 @@ func (c *config) start() (context.Context, bool) {
 	return ctx, ignoreOpenSSHExtensions
 }
 
-func (c *config) setupLogFile() error {
+func (c *config) setupLogFile() {
 	var logFile *os.File
 
 	if c.logFile != "" {
@@ -146,8 +145,6 @@ func (c *config) setupLogFile() error {
 	}
 	log.SetOutput(logOutput)
 	log.SetPrefix("[L] ")
-
-	return nil
 }
 
 // find the existing server by getsockopt
@@ -195,6 +192,12 @@ func stopService(pid int) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	process.Signal(syscall.SIGTERM)
-	process.Wait()
+	err = process.Signal(syscall.SIGTERM)
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = process.Wait()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

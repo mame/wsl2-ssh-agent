@@ -52,8 +52,11 @@ func TestRepeaterNoPowerShell(t *testing.T) {
 func TestRepeaterBrokenPowerShell(t *testing.T) {
 	tmpDir := setupDummyEnv(t)
 
-	os.WriteFile(filepath.Join(tmpDir, "PowerShell.exe"), []byte(dummyBrokenPowerShell), 0777)
-	_, err := newRepeater(context.Background())
+	err := os.WriteFile(filepath.Join(tmpDir, "PowerShell.exe"), []byte(dummyBrokenPowerShell), 0777)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = newRepeater(context.Background())
 	if err == nil || err.Error() != "failed to invoke PowerShell.exe 3 times; give up" {
 		t.Errorf("should fail")
 	}
@@ -62,7 +65,10 @@ func TestRepeaterBrokenPowerShell(t *testing.T) {
 func TestRepeaterNormal(t *testing.T) {
 	tmpDir := setupDummyEnv(t)
 
-	os.WriteFile(filepath.Join(tmpDir, "PowerShell.exe"), []byte(dummyEchoPowerShell), 0777)
+	err := os.WriteFile(filepath.Join(tmpDir, "PowerShell.exe"), []byte(dummyEchoPowerShell), 0777)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	rep, err := newRepeater(context.Background())
 	if err != nil {
@@ -70,15 +76,18 @@ func TestRepeaterNormal(t *testing.T) {
 	}
 
 	buf := make([]byte, len(repeaterPs1))
-	io.ReadFull(rep.out, buf)
-	if string(buf) != repeaterPs1 {
+	_, err = io.ReadFull(rep.out, buf)
+	if err != nil || string(buf) != repeaterPs1 {
 		t.Errorf("does not work")
 	}
 
-	rep.in.Write([]byte("Hello"))
+	_, err = rep.in.Write([]byte("Hello"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	buf = make([]byte, 5)
-	io.ReadFull(rep.out, buf)
-	if string(buf) != "Hello" {
+	_, err = io.ReadFull(rep.out, buf)
+	if err != nil || string(buf) != "Hello" {
 		t.Errorf("does not work")
 	}
 
@@ -97,7 +106,10 @@ func TestSshVersionNoSsh(t *testing.T) {
 func TestSshVersionNormal(t *testing.T) {
 	tmpDir := setupDummyEnv(t)
 
-	os.WriteFile(filepath.Join(tmpDir, "ssh.exe"), []byte(dummySsh), 0777)
+	err := os.WriteFile(filepath.Join(tmpDir, "ssh.exe"), []byte(dummySsh), 0777)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	s := getWinSshVersion()
 	if s != "Hello" {
