@@ -13,7 +13,7 @@ builds:
 archives:
   - format: binary
     name_template: >-
-      {{ .ProjectName }}{{- if eq .Arch "amd64" }}-{{ .Arch }}{{ end }}
+      {{ .ProjectName }}{{- if eq .Arch "arm64" }}-{{ .Arch }}{{ end }}
 checksum:
   name_template: 'checksums.txt'
 snapshot:
