@@ -110,8 +110,8 @@ func (c *config) start() (context.Context, bool) {
 	signal.Ignore(syscall.SIGPIPE)
 	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
-	// check if ssh-agent.exe is new
-	ignoreOpenSSHExtensions := strings.HasPrefix(getWinSshVersion(), "OpenSSH_for_Windows_8.6")
+	// check if ssh-agent.exe is older than 8.9
+	ignoreOpenSSHExtensions := strings.Compare(getWinSshVersion(), "OpenSSH_for_Windows_8.9") == -1
 	if ignoreOpenSSHExtensions {
 		log.Printf("ssh-agent.exe seems to be old; ignore OpenSSH extension messages")
 	}
