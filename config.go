@@ -165,6 +165,7 @@ func findRunningServerPid(path string) int {
 			if err != nil {
 				log.Fatal(fmt.Errorf("failed to remove %s: %s", path, err))
 			}
+			return -1
 		}
 		log.Fatal(fmt.Errorf("failed to connect to %s: %s", path, err))
 	}
