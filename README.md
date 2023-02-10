@@ -9,7 +9,7 @@ This tool allows from WSL2 to use the ssh-agent service on Windows host.
 Put `wsl2-ssh-agent` command in your favorite directory in WSL2, for example, `$HOME/`.
 
 ```
-curl -O https://github.com/mame/wsl2-ssh-agent/releases/latest/download/wsl2-ssh-agent
+curl -L -O https://github.com/mame/wsl2-ssh-agent/releases/latest/download/wsl2-ssh-agent
 chmod 755 wsl2-ssh-agent
 ```
 
