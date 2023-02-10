@@ -128,9 +128,9 @@ func getWinSshVersion() string {
 }
 
 func trial(i int) string {
-	if i == 1 {
+	if i == 0 {
 		return ""
 	} else {
-		return fmt.Sprintf(" (trial %d/%d)", i, len(waitTimes))
+		return fmt.Sprintf(" (trial %d/%d)", i+1, len(waitTimes))
 	}
 }
