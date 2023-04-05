@@ -6,16 +6,22 @@ This tool allows from WSL2 to use the ssh-agent service on Windows host.
 
 ### 1. Install wsl2-ssh-agent
 
-Put `wsl2-ssh-agent` command in your favorite directory in WSL2, for example, `$HOME/`.
+Put `wsl2-ssh-agent` binary in your favorite directory in WSL2, for example, `$HOME/`.
 
 ```
 curl -L -O https://github.com/mame/wsl2-ssh-agent/releases/latest/download/wsl2-ssh-agent
+```
+If you are under ARM64 architecture, download the `arm64` binary instead:
+```
+curl -L -O https://github.com/mame/wsl2-ssh-agent/releases/latest/download/wsl2-ssh-agent-arm64
+```
+Change permisions so the binary is executable:
+```
 chmod 755 wsl2-ssh-agent
 ```
+### 2. Modify `.bashrc` (or `.zshrc` if you are using `zsh`)
 
-### 2. Modify `.bashrc`
-
-Add the following line to `.bashrc`.
+Add the following line to `.bashrc` (or `.zshrc` if you are using `zsh`).
 
 ```
 eval $($HOME/wsl2-ssh-agent)
