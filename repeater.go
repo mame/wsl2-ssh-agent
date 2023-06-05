@@ -30,7 +30,7 @@ var waitTimes []time.Duration = []time.Duration{
 // invoke PowerShell.exe and run
 func newRepeater(ctx context.Context) (*repeater, error) {
 	for i, limit := range waitTimes {
-		log.Printf("invoking [W] in PowerShell.exe%s", trial(i+1))
+		log.Printf("invoking [W] in PowerShell.exe%s", trial(i))
 
 		cmd := exec.Command("PowerShell.exe", "-Command", "-")
 		in, err := cmd.StdinPipe()
