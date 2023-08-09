@@ -35,16 +35,17 @@ Function MainLoop {
 		$buf[0] = 0xff
 		$ssh_client_out.Write($buf, 0, 1)
 	
-		while($true) {
-			Try{
+		while ($true) {
+			Try {
 				$null = $ssh_client_in.Read((New-Object byte[] 1), 0, 0)
 				$ssh_agent = New-Object System.IO.Pipes.NamedPipeClientStream ".", "openssh-ssh-agent", InOut
 				$ssh_agent.Connect()
 				Log "[W] named pipe: connected"
 				$len = RelayMessage $ssh_client_in $ssh_agent $buf "->"
 				$len = RelayMessage $ssh_agent $ssh_client_out $buf "<-"
-			}Finally{
-				If($null -ne $ssh_agent){
+			}
+			Finally {
+				if ($null -ne $ssh_agent) {
 					$ssh_agent.Dispose()
 					Log "[W] named pipe: disconnected"
 				}
