@@ -24,17 +24,17 @@ Function RelayMessage($from, $to, $buf, $arrow) {
 }
 
 Function MainLoop {
-	Try {		
+	Try {
 		$buf = New-Object byte[] 8192
 		$ssh_client_in = [console]::OpenStandardInput()
 		$ssh_client_out = [console]::OpenStandardOutput()
-	
+
 		$ver = $PSVersionTable["PSVersion"]
 		Log "ready: PSVersion $ver"
 
 		$buf[0] = 0xff
 		$ssh_client_out.Write($buf, 0, 1)
-	
+
 		while ($true) {
 			Try {
 				$null = $ssh_client_in.Read((New-Object byte[] 1), 0, 0)
@@ -50,7 +50,7 @@ Function MainLoop {
 					Log "[W] named pipe: disconnected"
 				}
 			}
-		}	
+		}
 	}
 	Finally {
 		$host.ui.WriteErrorLine("wsl2-ssh-agent.ps1: terminated")
