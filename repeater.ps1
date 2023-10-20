@@ -24,10 +24,7 @@ Function RelayMessage($from, $to, $buf, $arrow) {
 }
 
 Function MainLoop {
-	Try {
-		$ssh_agent = New-Object System.IO.Pipes.NamedPipeClientStream ".", "openssh-ssh-agent", InOut
-		$ssh_agent.Connect()
-		
+	Try {		
 		$buf = New-Object byte[] 8192
 		$ssh_client_in = [console]::OpenStandardInput()
 		$ssh_client_out = [console]::OpenStandardOutput()
@@ -38,9 +35,21 @@ Function MainLoop {
 		$buf[0] = 0xff
 		$ssh_client_out.Write($buf, 0, 1)
 	
-		while($true) {	
-			$len = RelayMessage $ssh_client_in $ssh_agent $buf "->"
-			$len = RelayMessage $ssh_agent $ssh_client_out $buf "<-"
+		while ($true) {
+			Try {
+				$null = $ssh_client_in.Read((New-Object byte[] 1), 0, 0)
+				$ssh_agent = New-Object System.IO.Pipes.NamedPipeClientStream ".", "openssh-ssh-agent", InOut
+				$ssh_agent.Connect()
+				Log "[W] named pipe: connected"
+				$len = RelayMessage $ssh_client_in $ssh_agent $buf "->"
+				$len = RelayMessage $ssh_agent $ssh_client_out $buf "<-"
+			}
+			Finally {
+				if ($null -ne $ssh_agent) {
+					$ssh_agent.Dispose()
+					Log "[W] named pipe: disconnected"
+				}
+			}
 		}	
 	}
 	Finally {
