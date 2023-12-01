@@ -13,17 +13,17 @@ import (
 
 type server struct {
 	listener                net.Listener
-	ignoreOpenSSHExtensions bool
+	powershellPath string
 }
 
-func newServer(path string, ignoreOpenSSHExtensions bool) *server {
-	listener, err := net.Listen("unix", path)
+func newServer(socketPath string, powershellPath string) *server {
+	listener, err := net.Listen("unix", socketPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("start listening on %s", path)
+	log.Printf("start listening on %s", socketPath)
 
-	return &server{listener, ignoreOpenSSHExtensions}
+	return &server{listener, powershellPath}
 }
 
 type request struct {
@@ -91,7 +91,7 @@ func (s *server) server(ctx context.Context, cancel func(), requestQueue chan re
 
 	for {
 		// invoke PowerShell.exe
-		rep, err := newRepeater(ctx)
+		rep, err := newRepeater(ctx, s.powershellPath)
 		if err != nil {
 			return
 		}
@@ -180,22 +180,6 @@ func (s *server) client(wg *sync.WaitGroup, ctx context.Context, sshClient net.C
 		}
 		log.Printf("ssh -> [L] (%d B)", len(req))
 
-		if s.ignoreOpenSSHExtensions && req[4] == 0x1b /* SSH_AGENTC_EXTENSION */ {
-			// This is OpenSSH's extension message since OpenSSH 8.9.
-			//
-			// ref: https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.agent
-			//
-			// If we pass this message to ssh-agent.exe in OpenSSH 8.6, the connection is closed.
-			// So we need to drop this message and send a dummy success response.
-			log.Printf("ssh <- [L] (5 B) <dummy for OpenSSH ext.>")
-			err := replyDummySuccess(sshClient, 0)
-			if err != nil {
-				log.Printf("failed to write to ssh: %s", err)
-				break
-			}
-			continue
-		}
-
 		requestQueue <- request{data: req, resultChannel: resChan}
 		resp, ok := <-resChan
 		if !ok {
@@ -240,10 +224,4 @@ func readMessage(from io.Reader) ([]byte, error) {
 	}
 
 	return append(header, body...), nil
-}
-
-func replyDummySuccess(client io.ReadWriter, len int64) error {
-	buf := []byte{0, 0, 0, 1, 6 /* SSH_AGENT_SUCCESS */}
-	_, err := client.Write(buf)
-	return err
 }

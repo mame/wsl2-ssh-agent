@@ -1,14 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	_ "embed"
 	"fmt"
 	"io"
 	"log"
 	"os/exec"
-	"strings"
 	"time"
 )
 
@@ -28,11 +26,11 @@ var waitTimes []time.Duration = []time.Duration{
 }
 
 // invoke PowerShell.exe and run
-func newRepeater(ctx context.Context) (*repeater, error) {
+func newRepeater(ctx context.Context, powershell string) (*repeater, error) {
 	for i, limit := range waitTimes {
 		log.Printf("invoking [W] in PowerShell.exe%s", trial(i))
 
-		cmd := exec.Command("PowerShell.exe", "-Command", "-")
+		cmd := exec.Command(powershell, "-Command", "-")
 		in, err := cmd.StdinPipe()
 		if err != nil {
 			continue
@@ -94,37 +92,6 @@ func terminate(cmd *exec.Cmd) {
 func (rep *repeater) terminate() {
 	rep.in.Close()
 	terminate(rep.cmd)
-}
-
-func getWinSshVersion() string {
-	for i, limit := range waitTimes {
-		ctx, cancel := context.WithTimeout(context.Background(), limit)
-		defer cancel()
-
-		log.Printf("check the version of ssh.exe%s", trial(i))
-
-		cmd := exec.CommandContext(ctx, "ssh.exe", "-V")
-
-		var stdout, stderr bytes.Buffer
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stderr
-
-		err := cmd.Run()
-
-		if err != nil {
-			log.Printf("failed to invoke ssh.exe: %s", err)
-			continue
-		}
-
-		version := strings.TrimSuffix(stderr.String(), "\r\n")
-
-		log.Printf("the version of ssh.exe: %#v", version)
-		return version
-	}
-
-	log.Printf("failed to check the version of ssh.exe")
-
-	return ""
 }
 
 func trial(i int) string {

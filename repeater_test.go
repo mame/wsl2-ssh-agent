@@ -22,10 +22,6 @@ loop do
 end
 `
 
-const dummySsh = `#!/usr/bin/ruby
-$stderr << "Hello\r\n"
-`
-
 func setupDummyEnv(t *testing.T) string {
 	t.Helper()
 	log.SetOutput(io.Discard)
@@ -92,27 +88,4 @@ func TestRepeaterNormal(t *testing.T) {
 	}
 
 	rep.terminate()
-}
-
-func TestSshVersionNoSsh(t *testing.T) {
-	setupDummyEnv(t)
-
-	s := getWinSshVersion()
-	if s != "" {
-		t.Errorf("getWinSshVersion should fail")
-	}
-}
-
-func TestSshVersionNormal(t *testing.T) {
-	tmpDir := setupDummyEnv(t)
-
-	err := os.WriteFile(filepath.Join(tmpDir, "ssh.exe"), []byte(dummySsh), 0777)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	s := getWinSshVersion()
-	if s != "Hello" {
-		t.Errorf("getWinSshVersion does not work well: %#v", s)
-	}
 }

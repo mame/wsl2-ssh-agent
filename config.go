@@ -9,14 +9,15 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"syscall"
 )
 
 type config struct {
 	socketPath string
+	powershellPath string
 	foreground bool
 	verbose    bool
 	stop       bool
@@ -35,10 +36,26 @@ func defaultSocketPath() string {
 	return filepath.Join(home, ".ssh", "wsl2-ssh-agent.sock")
 }
 
+func powershellPath() string {
+	path, err := exec.LookPath("powershell.exe")
+	if err != nil {
+		path := "/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
+		_, err := os.Stat(path)
+		if err == nil {
+			return path
+		} else {
+			return ""
+		}
+
+	}
+	return path
+}
+
 func newConfig() *config {
 	c := &config{}
 
 	flag.StringVar(&c.socketPath, "socket", defaultSocketPath(), "a path of UNIX domain socket to listen")
+	flag.StringVar(&c.powershellPath, "powershell-path", powershellPath(), "a path of Windows PowerShell (powershell.exe)")
 	flag.BoolVar(&c.foreground, "foreground", false, "run in foreground mode")
 	flag.BoolVar(&c.verbose, "verbose", false, "verbose mode")
 	flag.StringVar(&c.logFile, "log", "", "a file path to write the log")
@@ -52,10 +69,15 @@ func newConfig() *config {
 
 	flag.Parse()
 
+	if c.powershellPath == "" {
+		fmt.Printf("powershell.exe not found, use the -powershell-path to customize the path.\n")
+		os.Exit(1)
+	}
+
 	return c
 }
 
-func (c *config) start() (context.Context, bool) {
+func (c *config) start() (context.Context) {
 	if c.version {
 		fmt.Printf("wsl2-ssh-agent %s\n", version)
 		os.Exit(0)
@@ -110,13 +132,7 @@ func (c *config) start() (context.Context, bool) {
 	signal.Ignore(syscall.SIGPIPE)
 	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
-	// check if ssh-agent.exe is older than 8.9
-	ignoreOpenSSHExtensions := strings.Compare(getWinSshVersion(), "OpenSSH_for_Windows_8.9") == -1
-	if ignoreOpenSSHExtensions {
-		log.Printf("ssh-agent.exe seems to be old; ignore OpenSSH extension messages")
-	}
-
-	return ctx, ignoreOpenSSHExtensions
+	return ctx
 }
 
 func (c *config) setupLogFile() {
