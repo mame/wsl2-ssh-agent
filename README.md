@@ -19,6 +19,9 @@ Change permisions so the binary is executable:
 ```
 chmod 755 wsl2-ssh-agent
 ```
+
+**If you are using ArchLinux, you can install the [wsl2-ssh-agent](https://aur.archlinux.org/packages/wsl2-ssh-agent) package from the AUR (maintained by @Hill-98).**
+
 ### 2. Modify `.bashrc` (or `.zshrc` if you are using `zsh`)
 
 Add the following line to `.bashrc` (or `.zshrc` if you are using `zsh`).
