@@ -16,12 +16,13 @@ import (
 )
 
 type config struct {
-	socketPath string
-	foreground bool
-	verbose    bool
-	stop       bool
-	logFile    string
-	version    bool
+	socketPath  string
+	foreground  bool
+	verbose     bool
+	stop        bool
+	logFile     string
+	version     bool
+	shellOutput string
 }
 
 var version = "(development version)"
@@ -44,6 +45,7 @@ func newConfig() *config {
 	flag.StringVar(&c.logFile, "log", "", "a file path to write the log")
 	flag.BoolVar(&c.stop, "stop", false, "stop the daemon and exit")
 	flag.BoolVar(&c.version, "version", false, "print version and exit")
+	flag.StringVar(&c.shellOutput, "shell", "bash", "socket output format. bash, zsh, or fish")
 
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "usage: wsl2-ssh-agent\n")
@@ -65,7 +67,15 @@ func (c *config) start() (context.Context, bool) {
 	parent := checkDaemonMode()
 
 	// script output
-	output := fmt.Sprintf("SSH_AUTH_SOCK=%s; export SSH_AUTH_SOCK;", c.socketPath)
+	output := ""
+	switch c.shellOutput {
+    case "bash", "zsh":
+      output = fmt.Sprintf("SSH_AUTH_SOCK=%s; export SSH_AUTH_SOCK;", c.socketPath)
+    case "fish":
+      output = fmt.Sprintf("set -Ux SSH_AUTH_SOCK %s", c.socketPath)
+    default:
+      output = fmt.Sprintf("SSH_AUTH_SOCK=%s; export SSH_AUTH_SOCK;", c.socketPath)
+	}
 
 	// set up the log file
 	c.setupLogFile()
@@ -99,6 +109,7 @@ func (c *config) start() (context.Context, bool) {
 			if c.logFile != "" {
 				args = append(args, "-log", c.logFile)
 			}
+			args = append(args, "-shell", c.shellOutput)
 			startDaemonizing(args...)
 		} else {
 			completeDaemonizing(output)

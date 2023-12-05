@@ -11,23 +11,37 @@ Put `wsl2-ssh-agent` binary in your favorite directory in WSL2, for example, `$H
 ```
 curl -L -O https://github.com/mame/wsl2-ssh-agent/releases/latest/download/wsl2-ssh-agent
 ```
+
 If you are under ARM64 architecture, download the `arm64` binary instead:
+
 ```
 curl -L -O https://github.com/mame/wsl2-ssh-agent/releases/latest/download/wsl2-ssh-agent-arm64
 ```
+
 Change permisions so the binary is executable:
+
 ```
 chmod 755 wsl2-ssh-agent
 ```
 
 **If you are using ArchLinux, you can install the [wsl2-ssh-agent](https://aur.archlinux.org/packages/wsl2-ssh-agent) package from the AUR (maintained by @Hill-98).**
 
-### 2. Modify `.bashrc` (or `.zshrc` if you are using `zsh`)
+### 2. Modify your shell's rc file
 
+Bash or Zsh
 Add the following line to `.bashrc` (or `.zshrc` if you are using `zsh`).
 
 ```
-eval $($HOME/wsl2-ssh-agent)
+eval $($HOME/wsl2-ssh-agent )
+```
+
+Fish
+Add the following lines to config.fish
+
+```
+if status is-login
+  $HOME/wsl2-ssh-agent | source
+end
 ```
 
 Close and reopen the terminal and execute `ssh your-machine`.
@@ -37,12 +51,12 @@ The command should communicate with ssh-agent.exe service.
 
 ### Make sure that ssh-agent.exe is working properly
 
-* Open the "Services" app and check that "OpenSSH Authentication Agent" service is installed and running.
-* Check that `ssh your-machine` works perfect on cmd.exe or PowerShell, not on WSL2.
+- Open the "Services" app and check that "OpenSSH Authentication Agent" service is installed and running.
+- Check that `ssh your-machine` works perfect on cmd.exe or PowerShell, not on WSL2.
 
 ### Check the log of ssh
 
-* You may want to run `ssh -v your-machine` and read the log. If everything is good, you should see the following log.
+- You may want to run `ssh -v your-machine` and read the log. If everything is good, you should see the following log.
 
 ```
 debug1: get_agent_identities: bound agent to hostkey
@@ -51,7 +65,7 @@ debug1: get_agent_identities: agent returned XXX keys
 
 ### Check the log of wsl2-ssh-agent
 
-* Run `wsl2-ssh-agent` in verbose and foreground mode and read the log. This is an example output.
+- Run `wsl2-ssh-agent` in verbose and foreground mode and read the log. This is an example output.
 
 ```
 # Stop the existing server if any
@@ -99,9 +113,9 @@ subgraph Windows
 end
 ```
 
-* wsl2-ssh-agent listens on a UNIX domain socket (by default, $HOME/.ssh/wsl2-ssh-agent.sock).
-* wsl2-ssh-agent invokes PowerShell.exe as a child process, which can communicate with ssh-agent.exe service via a named pipe.
-* wsl2-ssh-agent and PowerShell.exe communicates via stdin/stdout thanks to WSL2 interop.
+- wsl2-ssh-agent listens on a UNIX domain socket (by default, $HOME/.ssh/wsl2-ssh-agent.sock).
+- wsl2-ssh-agent invokes PowerShell.exe as a child process, which can communicate with ssh-agent.exe service via a named pipe.
+- wsl2-ssh-agent and PowerShell.exe communicates via stdin/stdout thanks to WSL2 interop.
 
 ## Note
 
