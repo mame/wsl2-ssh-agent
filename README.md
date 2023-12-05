@@ -32,7 +32,7 @@ Bash or Zsh
 Add the following line to `.bashrc` (or `.zshrc` if you are using `zsh`).
 
 ```
-eval $($HOME/wsl2-ssh-agent )
+eval $($HOME/wsl2-ssh-agent)
 ```
 
 Fish
