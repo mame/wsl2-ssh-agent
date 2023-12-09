@@ -54,7 +54,7 @@ func newConfig() *config {
 	c := &config{}
 
 	flag.StringVar(&c.socketPath, "socket", defaultSocketPath(), "a path of UNIX domain socket to listen")
-	flag.StringVar(&c.powershellPath, "powershell-path", powershellPath(), "a path of Windows PowerShell (powershell.exe)")
+	flag.StringVar(&c.powershellPath, "powershell-path", powershellPath(), "a path of Windows PowerShell")
 	flag.BoolVar(&c.foreground, "foreground", false, "run in foreground mode")
 	flag.BoolVar(&c.verbose, "verbose", false, "verbose mode")
 	flag.StringVar(&c.logFile, "log", "", "a file path to write the log")
@@ -69,7 +69,7 @@ func newConfig() *config {
 	flag.Parse()
 
 	if c.powershellPath == "" {
-		fmt.Printf("powershell.exe not found, use the -powershell-path to customize the path.\n")
+		fmt.Fprintln(os.Stderr, "powershell.exe not found, use the -powershell-path to customize the path.")
 		os.Exit(1)
 	}
 
