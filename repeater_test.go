@@ -39,7 +39,7 @@ func setupDummyEnv(t *testing.T) string {
 func TestRepeaterNoPowerShell(t *testing.T) {
 	setupDummyEnv(t)
 
-	_, err := newRepeater(context.Background())
+	_, err := newRepeater(context.Background(), "/dummy/powershell.exe")
 	if err == nil || err.Error() != "failed to invoke PowerShell.exe 3 times; give up" {
 		t.Errorf("should fail")
 	}
@@ -48,11 +48,11 @@ func TestRepeaterNoPowerShell(t *testing.T) {
 func TestRepeaterBrokenPowerShell(t *testing.T) {
 	tmpDir := setupDummyEnv(t)
 
-	err := os.WriteFile(filepath.Join(tmpDir, "PowerShell.exe"), []byte(dummyBrokenPowerShell), 0777)
+	err := os.WriteFile(filepath.Join(tmpDir, "powershell.exe"), []byte(dummyBrokenPowerShell), 0777)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = newRepeater(context.Background())
+	_, err = newRepeater(context.Background(), powershellPath())
 	if err == nil || err.Error() != "failed to invoke PowerShell.exe 3 times; give up" {
 		t.Errorf("should fail")
 	}
@@ -61,12 +61,12 @@ func TestRepeaterBrokenPowerShell(t *testing.T) {
 func TestRepeaterNormal(t *testing.T) {
 	tmpDir := setupDummyEnv(t)
 
-	err := os.WriteFile(filepath.Join(tmpDir, "PowerShell.exe"), []byte(dummyEchoPowerShell), 0777)
+	err := os.WriteFile(filepath.Join(tmpDir, "powershell.exe"), []byte(dummyEchoPowerShell), 0777)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	rep, err := newRepeater(context.Background())
+	rep, err := newRepeater(context.Background(), powershellPath())
 	if err != nil {
 		t.Errorf("failed: %s", err)
 	}

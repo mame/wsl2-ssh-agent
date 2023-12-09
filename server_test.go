@@ -32,13 +32,13 @@ loop do
 end
 `
 
-	err := os.WriteFile(filepath.Join(tmpDir, "PowerShell.exe"), []byte(dummyUpcaseEchoPowerShell), 0777)
+	err := os.WriteFile(filepath.Join(tmpDir, "powershell.exe"), []byte(dummyUpcaseEchoPowerShell), 0777)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	path := filepath.Join(tmpDir, "tmp.sock")
-	s := newServer(path, true)
+	s := newServer(path, powershellPath())
 
 	done := make(chan struct{})
 	ctx, cancel := context.WithCancel(context.Background())
@@ -73,27 +73,6 @@ func TestServerNormal(t *testing.T) {
 	buf := make([]byte, 4+5)
 	n, err := io.ReadFull(sock, buf)
 	if err != nil || n != 4+5 || string(buf) != "\x00\x00\x00\x05HELLO" {
-		t.Errorf("failed to communicate: %v", err)
-	}
-}
-
-func TestServerOpenSSHExtension(t *testing.T) {
-	path := setupDummyServer(t)
-
-	sock, err := net.Dial("unix", path)
-	if err != nil {
-		t.Fatalf("failed to connect: %v", err)
-	}
-	defer sock.Close()
-
-	_, err = sock.Write([]byte("\x00\x00\x00\x01\x1b"))
-	if err != nil {
-		t.Errorf("failed to communicate: %v", err)
-	}
-
-	buf := make([]byte, 4+1)
-	n, err := io.ReadFull(sock, buf)
-	if err != nil || n != 5 || string(buf) != "\x00\x00\x00\x01\x06" {
 		t.Errorf("failed to communicate: %v", err)
 	}
 }
