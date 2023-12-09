@@ -46,7 +46,6 @@ func powershellPath() string {
 		} else {
 			return ""
 		}
-
 	}
 	return path
 }

@@ -19,7 +19,7 @@ type repeater struct {
 	cmd *exec.Cmd
 }
 
-var waitTimes []time.Duration = []time.Duration{
+var waitTimes = []time.Duration{
 	3 * time.Second,
 	6 * time.Second,
 	10 * time.Second,

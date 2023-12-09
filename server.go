@@ -211,13 +211,13 @@ func readMessage(from io.Reader) ([]byte, error) {
 		return nil, err
 	}
 
-	var len uint32
-	err = binary.Read(bytes.NewReader(header), binary.BigEndian, &len)
+	var n uint32
+	err = binary.Read(bytes.NewReader(header), binary.BigEndian, &n)
 	if err != nil {
 		log.Fatal("unreachable")
 	}
 
-	body := make([]byte, len)
+	body := make([]byte, n)
 	_, err = io.ReadFull(from, body)
 	if err != nil {
 		return nil, err
