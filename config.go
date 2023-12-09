@@ -16,13 +16,13 @@ import (
 )
 
 type config struct {
-	socketPath string
+	socketPath     string
 	powershellPath string
-	foreground bool
-	verbose    bool
-	stop       bool
-	logFile    string
-	version    bool
+	foreground     bool
+	verbose        bool
+	stop           bool
+	logFile        string
+	version        bool
 }
 
 var version = "(development version)"
@@ -77,7 +77,7 @@ func newConfig() *config {
 	return c
 }
 
-func (c *config) start() (context.Context) {
+func (c *config) start() context.Context {
 	if c.version {
 		fmt.Printf("wsl2-ssh-agent %s\n", version)
 		os.Exit(0)

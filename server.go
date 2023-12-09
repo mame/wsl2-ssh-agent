@@ -12,7 +12,7 @@ import (
 )
 
 type server struct {
-	listener                net.Listener
+	listener       net.Listener
 	powershellPath string
 }
 
