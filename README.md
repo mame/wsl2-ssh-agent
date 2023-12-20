@@ -22,13 +22,27 @@ chmod 755 wsl2-ssh-agent
 
 **If you are using ArchLinux, you can install the [wsl2-ssh-agent](https://aur.archlinux.org/packages/wsl2-ssh-agent) package from the AUR (maintained by @Hill-98).**
 
-### 2. Modify `.bashrc` (or `.zshrc` if you are using `zsh`)
+### 2. Modify your shell's rc file
+
+#### bash or zsh
 
 Add the following line to `.bashrc` (or `.zshrc` if you are using `zsh`).
 
 ```
 eval $($HOME/wsl2-ssh-agent)
 ```
+
+#### fish
+
+Add the following lines to `config.fish`
+
+```
+if status is-login
+  $HOME/wsl2-ssh-agent | source
+end
+```
+
+### 3. Reopen your terminal
 
 Close and reopen the terminal and execute `ssh your-machine`.
 The command should communicate with ssh-agent.exe service.

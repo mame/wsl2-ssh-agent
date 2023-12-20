@@ -12,12 +12,14 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 )
 
 type config struct {
 	socketPath     string
 	powershellPath string
+	format         string
 	foreground     bool
 	verbose        bool
 	stop           bool
@@ -76,6 +78,31 @@ func newConfig() *config {
 	return c
 }
 
+func getOutputFormat(format string) string {
+	if format == "auto" {
+		shell := os.Getenv("SHELL")
+		if strings.HasSuffix(shell, "fish") {
+			format = "fish"
+		} else if strings.HasSuffix(shell, "csh") {
+			format = "csh"
+		} else {
+			format = "sh"
+		}
+	}
+	switch format {
+	case "sh", "bash", "zsh":
+		return "SSH_AUTH_SOCK=%s; export SSH_AUTH_SOCK;"
+	case "csh", "tcsh":
+		return "setenv SSH_AUTH_SOCK %s"
+	case "fish":
+		return "set -x SSH_AUTH_SOCK %s"
+	default:
+		fmt.Printf("output format must be auto, bash, zsh, csh, tcsh, or fish\n")
+		os.Exit(1)
+		return ""
+	}
+}
+
 func (c *config) start() context.Context {
 	if c.version {
 		fmt.Printf("wsl2-ssh-agent %s\n", version)
@@ -86,7 +113,7 @@ func (c *config) start() context.Context {
 	parent := checkDaemonMode()
 
 	// script output
-	output := fmt.Sprintf("SSH_AUTH_SOCK=%s; export SSH_AUTH_SOCK;", c.socketPath)
+	output := fmt.Sprintf(getOutputFormat(c.format), c.socketPath)
 
 	// set up the log file
 	c.setupLogFile()
