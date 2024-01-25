@@ -60,6 +60,7 @@ func newConfig() *config {
 	flag.BoolVar(&c.foreground, "foreground", false, "run in foreground mode")
 	flag.BoolVar(&c.verbose, "verbose", false, "verbose mode")
 	flag.StringVar(&c.logFile, "log", "", "a file path to write the log")
+	flag.StringVar(&c.format, "format", "auto", "an output format: auto, bash, zsh, csh, tcsh, or fish")
 	flag.BoolVar(&c.stop, "stop", false, "stop the daemon and exit")
 	flag.BoolVar(&c.version, "version", false, "print version and exit")
 
