@@ -5,7 +5,7 @@ func main() {
 
 	ctx := c.start()
 
-	s := newServer(c.socketPath, c.powershellPath)
+	s := newServer(c.socketPath, c.powershellPath, c.pipeName)
 
 	s.run(ctx)
 }

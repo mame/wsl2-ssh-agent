@@ -19,6 +19,7 @@ import (
 type config struct {
 	socketPath     string
 	powershellPath string
+	pipeName       string
 	format         string
 	foreground     bool
 	verbose        bool
@@ -57,6 +58,7 @@ func newConfig() *config {
 
 	flag.StringVar(&c.socketPath, "socket", defaultSocketPath(), "a path of UNIX domain socket to listen")
 	flag.StringVar(&c.powershellPath, "powershell-path", powershellPath(), "a path of Windows PowerShell")
+	flag.StringVar(&c.pipeName, "pipename", "openssh-ssh-agent", "a name of pipe to connect")
 	flag.BoolVar(&c.foreground, "foreground", false, "run in foreground mode")
 	flag.BoolVar(&c.verbose, "verbose", false, "verbose mode")
 	flag.StringVar(&c.logFile, "log", "", "a file path to write the log")
