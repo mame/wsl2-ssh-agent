@@ -22,6 +22,8 @@ File.write('` + tmpDir + `/pid', $$.to_s)
 $stdout.sync = true
 $stdout << "\xff"
 s = $stdin.read(` + fmt.Sprintf("%d", len(repeaterPs1)) + `)
+len = $stdin.read(4)
+pipename = $stdin.read(len.unpack1("N"))
 loop do
 	# echo
 	len = $stdin.read(4)
@@ -38,7 +40,7 @@ end
 	}
 
 	path := filepath.Join(tmpDir, "tmp.sock")
-	s := newServer(path, powershellPath())
+	s := newServer(path, powershellPath(), "dummy-pipe-name")
 
 	done := make(chan struct{})
 	ctx, cancel := context.WithCancel(context.Background())

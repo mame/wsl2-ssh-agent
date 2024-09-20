@@ -39,7 +39,7 @@ func setupDummyEnv(t *testing.T) string {
 func TestRepeaterNoPowerShell(t *testing.T) {
 	setupDummyEnv(t)
 
-	_, err := newRepeater(context.Background(), "/dummy/powershell.exe")
+	_, err := newRepeater(context.Background(), "/dummy/powershell.exe", "dummy-pipe-name")
 	if err == nil || err.Error() != "failed to invoke PowerShell.exe 3 times; give up" {
 		t.Errorf("should fail")
 	}
@@ -52,7 +52,7 @@ func TestRepeaterBrokenPowerShell(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = newRepeater(context.Background(), powershellPath())
+	_, err = newRepeater(context.Background(), powershellPath(), "dummy-pipe-name")
 	if err == nil || err.Error() != "failed to invoke PowerShell.exe 3 times; give up" {
 		t.Errorf("should fail")
 	}
@@ -66,7 +66,7 @@ func TestRepeaterNormal(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rep, err := newRepeater(context.Background(), powershellPath())
+	rep, err := newRepeater(context.Background(), powershellPath(), "dummy-pipe-name")
 	if err != nil {
 		t.Errorf("failed: %s", err)
 	}
@@ -75,6 +75,12 @@ func TestRepeaterNormal(t *testing.T) {
 	_, err = io.ReadFull(rep.out, buf)
 	if err != nil || string(buf) != repeaterPs1 {
 		t.Errorf("does not work")
+	}
+
+	buf = make([]byte, 19)
+	_, err = io.ReadFull(rep.out, buf)
+	if err != nil || string(buf) != "\x00\x00\x00\x0fdummy-pipe-name" {
+		t.Errorf("does not work: %s", string(buf))
 	}
 
 	_, err = rep.in.Write([]byte("Hello"))

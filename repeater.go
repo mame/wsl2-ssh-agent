@@ -26,7 +26,7 @@ var waitTimes = []time.Duration{
 }
 
 // invoke PowerShell.exe and run
-func newRepeater(ctx context.Context, powershell string) (*repeater, error) {
+func newRepeater(ctx context.Context, powershell string, pipename string) (*repeater, error) {
 	for i, limit := range waitTimes {
 		log.Printf("invoking [W] in PowerShell.exe%s", trial(i))
 
@@ -69,6 +69,19 @@ func newRepeater(ctx context.Context, powershell string) (*repeater, error) {
 		case ok := <-done:
 			if ok {
 				log.Printf("[W] invoked successfully")
+
+				buf := make([]byte, 4)
+				buf[0] = byte((len(pipename) >> 24) & 0xff)
+				buf[1] = byte((len(pipename) >> 16) & 0xff)
+				buf[2] = byte((len(pipename) >> 8) & 0xff)
+				buf[3] = byte(len(pipename) & 0xff)
+				_, err = io.WriteString(in, string(buf)+pipename)
+				if err != nil {
+					log.Printf("failed to give [W] the pipe name: %s", err)
+					terminate(cmd)
+					continue
+				}
+
 				return &repeater{in, out, cmd}, nil
 			}
 		case <-time.After(limit):

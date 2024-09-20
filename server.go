@@ -14,16 +14,17 @@ import (
 type server struct {
 	listener       net.Listener
 	powershellPath string
+	pipeName       string
 }
 
-func newServer(socketPath string, powershellPath string) *server {
+func newServer(socketPath string, powershellPath string, pipeName string) *server {
 	listener, err := net.Listen("unix", socketPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Printf("start listening on %s", socketPath)
 
-	return &server{listener, powershellPath}
+	return &server{listener, powershellPath, pipeName}
 }
 
 type request struct {
@@ -91,7 +92,7 @@ func (s *server) server(ctx context.Context, cancel func(), requestQueue chan re
 
 	for {
 		// invoke PowerShell.exe
-		rep, err := newRepeater(ctx, s.powershellPath)
+		rep, err := newRepeater(ctx, s.powershellPath, s.pipeName)
 		if err != nil {
 			return
 		}

@@ -47,6 +47,10 @@ Function MainLoop {
 		$ssh_client_out.WriteByte(0xff)
 		Log "ready: PSVersion $ver"
 
+		$buf = ReadMessage $ssh_client_in
+		$pipename = [System.Text.Encoding]::UTF8.GetString($buf[4..$buf.Length])
+		Log "[W] named pipe: $pipename"
+
 		while ($true) {
 			Try {
 				$null = $ssh_client_in.Read((New-Object byte[] 1), 0, 0)
@@ -57,7 +61,7 @@ Function MainLoop {
 					Log "[W] return dummy for OpenSSH ext."
 					Continue
 				}
-				$ssh_agent = New-Object System.IO.Pipes.NamedPipeClientStream ".", "openssh-ssh-agent", InOut
+				$ssh_agent = New-Object System.IO.Pipes.NamedPipeClientStream ".", $pipename, InOut
 				$ssh_agent.Connect()
 				Log "[W] named pipe: connected"
 				$ssh_agent.Write($buf, 0, $buf.Length)
