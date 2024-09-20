@@ -47,6 +47,17 @@ end
 Close and reopen the terminal and execute `ssh your-machine`.
 The command should communicate with ssh-agent.exe service.
 
+## Tip: For pageant.exe
+
+If you want to use with the named pipe provided by pageant.exe, you can use the `-pipename` option.
+You can configure wsl2-ssh-agent as follows:
+
+```
+eval $($HOME/wsl2-ssh-agent -pipename $(grep -oP "IdentityAgent \"//\./pipe/\K[^\"]+" /mnt/c/.../pageant.conf))
+```
+
+(The author does not use pageant.exe. Let me know if it does not work.)
+
 ## Troubleshooting
 
 ### Make sure that ssh-agent.exe is working properly
