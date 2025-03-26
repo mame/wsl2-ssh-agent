@@ -60,9 +60,19 @@ func newRepeater(ctx context.Context, powershell string, pipename string) (*repe
 		// wait for the process start up
 		go func() {
 			// the process should output "\xff" if it starts successfully
+			// ignore any output until we got "\xff"
 			buf := make([]byte, 1)
-			n, err := out.Read(buf)
-			done <- err == nil && n == 1 && buf[0] == 0xff
+			for {
+				n, err := out.Read(buf)
+				if err != nil {
+					done <- false
+					return
+				}
+				if n == 1 && buf[0] == 0xff {
+					done <- true
+					return
+				}
+			}
 		}()
 
 		select {
