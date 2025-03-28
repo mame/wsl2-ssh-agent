@@ -16,6 +16,7 @@ $stdin.read
 
 const dummyEchoPowerShell = `#!/usr/bin/ruby
 $stdout.sync = true
+$stdout << "Warning: Some dummy ramdom warming messages ... Dummy ...\n"
 $stdout << "\xff"
 loop do
   $stdout << $stdin.getc
