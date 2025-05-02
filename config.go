@@ -148,7 +148,7 @@ func (c *config) start() context.Context {
 			log.Printf("daemonize: start")
 			args := []string{"-socket", c.socketPath}
 			if c.logFile != "" {
-				args = append(args, "-log", c.logFile)
+				args = append(args, "-pipename", c.pipeName, "-log", c.logFile)
 			}
 			startDaemonizing(args...)
 		} else {
