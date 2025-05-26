@@ -11,11 +11,15 @@ Put `wsl2-ssh-agent` binary in your favorite directory in WSL2, for example, `$H
 ```
 curl -L -O https://github.com/mame/wsl2-ssh-agent/releases/latest/download/wsl2-ssh-agent
 ```
+
 If you are under ARM64 architecture, download the `arm64` binary instead:
+
 ```
 curl -L -O https://github.com/mame/wsl2-ssh-agent/releases/latest/download/wsl2-ssh-agent-arm64
 ```
+
 Change permisions so the binary is executable:
+
 ```
 chmod 755 wsl2-ssh-agent
 ```
@@ -42,7 +46,29 @@ if status is-login
 end
 ```
 
-### 3. Reopen your terminal
+### 3. Systemd service (optional)
+
+We also provide a [systemd service](extras/systemd/user/wsl2-ssh-agent.service). You can use it to automatically start `wsl2-ssh-agent` when you log in to WSL2. But if you are already using your shell's rc file to start `wsl2-ssh-agent`, you can safely skip this step.
+
+* Copy the provided [`wsl2-ssh-agent.service`](extras/systemd/user/wsl2-ssh-agent.service)  file to `~/.config/systemd/user/`.
+Make the directory if necessary.
+
+* Enable and start the service:
+
+  ```sh
+  systemctl --user enable --now wsl2-ssh-agent.service
+  ```
+
+  **Note:** By default the service searches for `wsl2-ssh-agent` executable in `/usr/bin`;
+  If you have it placed in a different location, you just need to modify the `ExecStart` line in the service file accordingly.
+
+* Add the following to your shell's rc file (e.g., `.bashrc`, `.zshrc`):
+
+  ```sh
+  export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/wsl2-ssh-agent.sock
+  ```
+
+### 4. Reopen your terminal
 
 Close and reopen the terminal and execute `ssh your-machine`.
 The command should communicate with ssh-agent.exe service.
