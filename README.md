@@ -9,22 +9,20 @@ This tool allows from WSL2 to use the ssh-agent service on Windows host.
 Put `wsl2-ssh-agent` binary in your favorite directory in WSL2, for example, `$HOME/`.
 
 ```
+# For x86-64 architecture
 curl -L -O https://github.com/mame/wsl2-ssh-agent/releases/latest/download/wsl2-ssh-agent
-```
 
-If you are under ARM64 architecture, download the `arm64` binary instead:
-
-```
+# For ARM64 architecture
 curl -L -O https://github.com/mame/wsl2-ssh-agent/releases/latest/download/wsl2-ssh-agent-arm64
 ```
 
-Change permisions so the binary is executable:
+Then, make the binary executable:
 
 ```
 chmod 755 wsl2-ssh-agent
 ```
 
-**If you are using ArchLinux, you can install the [wsl2-ssh-agent](https://aur.archlinux.org/packages/wsl2-ssh-agent) package from the AUR (maintained by @Hill-98).**
+Note for Arch Linux users: You can install the [wsl2-ssh-agent](https://aur.archlinux.org/packages/wsl2-ssh-agent) package from the AUR (maintained by @Hill-98).
 
 ### 2. Modify your shell's rc file
 
@@ -70,39 +68,39 @@ Make the directory if necessary.
 
 ### 4. Reopen your terminal
 
-Close and reopen the terminal and execute `ssh your-machine`.
-The command should communicate with ssh-agent.exe service.
+Close and reopen the terminal.
+You should now be able to run `ssh your-server` and connect using the SSH keys managed by the Windows ssh-agent.exe service.
 
-## Tip: For pageant.exe
+## Tip: Using with pageant.exe
 
-If you want to use with the named pipe provided by pageant.exe, you can use the `-pipename` option.
-You can configure wsl2-ssh-agent as follows:
+If you want to use the named pipe provided by pageant.exe, you can use the `-pipename` option.
+For example:
 
 ```
 eval $($HOME/wsl2-ssh-agent -pipename $(grep -oP "IdentityAgent \"//\./pipe/\K[^\"]+" /mnt/c/.../pageant.conf))
 ```
 
-(The author does not use pageant.exe. Let me know if it does not work.)
+(Note: The author does not use pageant.exe. If this doesn't work, please open an issue.)
 
 ## Troubleshooting
 
-### Make sure that ssh-agent.exe is working properly
+### Confirm ssh-agent.exe is working
 
-* Open the "Services" app and check that "OpenSSH Authentication Agent" service is installed and running.
-* Check that `ssh your-machine` works perfect on cmd.exe or PowerShell, not on WSL2.
+* Open the "Services" app on Windows and confirm the "OpenSSH Authentication Agent" service is installed and running.
+* Check that `ssh your-server` works perfectly from cmd.exe or PowerShell (i.e., outside of WSL2).
 
-### Check the log of ssh
+### Check the ssh client log
 
-* You may want to run `ssh -v your-machine` and read the log. If everything is good, you should see the following log.
+* You may want to run `ssh -v your-server` and read the log. If everything is working correctly, you should see lines similar to these.
 
 ```
 debug1: get_agent_identities: bound agent to hostkey
 debug1: get_agent_identities: agent returned XXX keys
 ```
 
-### Check the log of wsl2-ssh-agent
+### Check the wsl2-ssh-agent log
 
-* Run `wsl2-ssh-agent` in verbose and foreground mode and read the log. This is an example output.
+To see detailed logs, stop the agent and restart it in verbose foreground mode.
 
 ```
 # Stop the existing server if any
@@ -110,34 +108,45 @@ $ $HOME/wsl2-ssh-agent -stop
 
 # Run in foreground mode
 $ $HOME/wsl2-ssh-agent --verbose --foreground
-[L] 2023/02/10 20:30:00 check the version of ssh.exe
-[L] 2023/02/10 20:30:01 the version of ssh.exe: "OpenSSH_for_Windows_8.6p1, LibreSSL 3.4.3"
-[L] 2023/02/10 20:30:01 ssh-agent.exe seems to be old; ignore OpenSSH extension messages
-[L] 2023/02/10 20:30:01 start listening on /home/mame/.ssh/wsl2-ssh-agent.sock
-[L] 2023/02/10 20:30:01 invoking [W] in PowerShell.exe
-[W] 2023/02/10 21:51:09 ready: PSVersion 5.1.22621.963
-[L] 2023/02/10 20:30:02 [W] invoked successfully
-[L] 2023/02/10 20:30:05 ssh: connected
-[L] 2023/02/10 20:30:05 ssh -> [L] (XXX B)
-[L] 2023/02/10 20:30:05 ssh <- [L] (5 B) <dummy for OpenSSH ext.>
-[L] 2023/02/10 20:30:05 ssh -> [L] (5 B)
-[L] 2023/02/10 20:30:05 [L] -> [W] (5 B)
-[W] 2023/02/10 21:51:12 [L] -> [W] -> ssh-agent.exe (5 B)
-[W] 2023/02/10 21:51:12 [L] <- [W] <- ssh-agent.exe (XXX B)
-[L] 2023/02/10 20:30:05 [L] <- [W] (XXX B)
-[L] 2023/02/10 20:30:05 ssh <- [L] (XXX B)
-[L] 2023/02/10 20:30:05 ssh -> [L] (XXX B)
-[L] 2023/02/10 20:30:05 [L] -> [W] (XXX B)
-[W] 2023/02/10 21:51:12 [L] -> [W] -> ssh-agent.exe (XXX B)
-[W] 2023/02/10 21:51:12 [L] <- [W] <- ssh-agent.exe (XXX B)
-[L] 2023/02/10 20:30:05 [L] <- [W] (XXX B)
-[L] 2023/02/10 20:30:05 ssh <- [L] (XXX B)
-[L] 2023/02/10 20:30:05 ssh: closed
+[L] 2025/07/29 19:51:27 start listening on /path/to/wsl2-ssh-agent.sock
+[L] 2025/07/29 19:51:27 invoking [W] in PowerShell.exe
+[W] 2025/07/29 19:51:28 ssh-agent.exe version: 9.5.4.1 (ignoreOpenSSHExtensions: False)
+[L] 2025/07/29 19:51:28 [W] invoked successfully
+[W] 2025/07/29 19:51:28 ready: PSVersion 5.1.22621.5624
+[W] 2025/07/29 19:51:28 [W] named pipe: openssh-ssh-agent
+[L] 2025/07/29 19:51:33 ssh: connected
+[L] 2025/07/29 19:51:33 ssh -> [L] (XXX B)
+[L] 2025/07/29 19:51:33 [L] -> [W] (XXX B)
+[W] 2025/07/29 19:51:33 [W] named pipe: connected
+[W] 2025/07/29 19:51:33 [L] -> [W] -> ssh-agent.exe (XXX B)
+[L] 2025/07/29 19:51:33 [L] <- [W] (XXX B)
+[W] 2025/07/29 19:51:33 [L] <- [W] <- ssh-agent.exe (XXX B)
+[L] 2025/07/29 19:51:33 ssh <- [L] (XXX B)
+[L] 2025/07/29 19:51:33 ssh -> [L] (XXX B)
+[L] 2025/07/29 19:51:33 [L] -> [W] (XXX B)
+[W] 2025/07/29 19:51:33 [W] named pipe: disconnected
+[W] 2025/07/29 19:51:33 [W] named pipe: connected
+[W] 2025/07/29 19:51:33 [L] -> [W] -> ssh-agent.exe (XXX B)
+[L] 2025/07/29 19:51:33 [L] <- [W] (XXX B)
+[L] 2025/07/29 19:51:33 ssh <- [L] (XXX B)
+[W] 2025/07/29 19:51:33 [L] <- [W] <- ssh-agent.exe (XXX B)
+[W] 2025/07/29 19:51:33 [W] named pipe: disconnected
+[L] 2025/07/29 19:51:33 ssh -> [L] (XXX B)
+[L] 2025/07/29 19:51:33 [L] -> [W] (XXX B)
+[W] 2025/07/29 19:51:33 [W] named pipe: connected
+[W] 2025/07/29 19:51:33 [L] -> [W] -> ssh-agent.exe (XXX B)
+[L] 2025/07/29 19:51:33 [L] <- [W] (XXX B)
+[L] 2025/07/29 19:51:33 ssh <- [L] (XXX B)
+[W] 2025/07/29 19:51:33 [L] <- [W] <- ssh-agent.exe (XXX B)
+[W] 2025/07/29 19:51:33 [W] named pipe: disconnected
+[L] 2025/07/29 19:51:33 ssh: closed
+[L] 2025/07/29 19:51:33 ssh: connected
+[L] 2025/07/29 19:51:33 ssh: closed
 ```
 
-## How wsl2-ssh-agent works
+## How It Works
 
-Linux ssh client connects to ssh-agent via a UNIX domain socket, while ssh-agent.exe service on Windows is listening on a named pipe. This command connects those two in the following mechanism.
+The SSH client in Linux communicates with an agent via a UNIX domain socket, while the ssh-agent.exe service on Windows listens on a named pipe. This tool connects the two using the following mechanism:
 
 ```mermaid
 graph TB
@@ -150,14 +159,14 @@ subgraph Windows
 end
 ```
 
-* wsl2-ssh-agent listens on a UNIX domain socket (by default, $HOME/.ssh/wsl2-ssh-agent.sock).
-* wsl2-ssh-agent invokes PowerShell.exe as a child process, which can communicate with ssh-agent.exe service via a named pipe.
-* wsl2-ssh-agent and PowerShell.exe communicates via stdin/stdout thanks to WSL2 interop.
+* wsl2-ssh-agent starts a server that listens on a UNIX domain socket in WSL2 (by default, $HOME/.ssh/wsl2-ssh-agent.sock).
+* It then invokes a PowerShell.exe child process on the Windows host.
+* The wsl2-ssh-agent process in WSL2 and the PowerShell process in Windows communicate via their stdin/stdout streams. These streams are connected by the WSL interop layer. The PowerShell process then forwards communication to the Windows ssh-agent.exe service via its named pipe.
 
-## Note
+## Note on Windows OpenSSH Compatibility
 
-Usually, ssh and ssh-agent should be the same version. However, OpenSSH on Ubuntu 22.04 is 8.9, while Windows bundles OpenSSH 8.6 (on my machine, as of this writing).
+My motivation for creating wsl2-ssh-agent was to work around a compatibility issue in OpenSSH. [The newer SSH client (version 8.9+) sends an extended protocol message](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.agent) that the older Windows agent (before 8.9) doesn't understand, which can cause the connection to fail. ([Japanese article](https://zenn.dev/qnighy/articles/8b992970b86653))
 
-[OpenSSH has extended the ssh-agent protocol since 8.9](https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.agent). However, ssh-agent.exe does not understand the extended message and will not communicate properly. ([Japanese article](https://zenn.dev/qnighy/articles/8b992970b86653))
+To fix this, wsl2-ssh-agent checks your Windows OpenSSH version. When it detects an older version (before 8.9), it intercepts these unsupported messages and sends a valid, compatible response back to the client. This prevents the old agent from failing and allows the connection to work.
 
-To address this issue, wsl2-ssh-agent does not pass the extended message to ssh-agent.exe. Instead, it swallows the message and reply a dummy SSH_AGENT_SUCCESS message to ssh client. Note that this may reduce the security strength. Please use this tool at your own risk.
+Modern Windows now includes an updated OpenSSH (9.5 or newer), so this problem no longer exists on up-to-date systems. The fix is automatically applied only when necessary, so you can use this tool on any system without changing your settings.
