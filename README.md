@@ -69,7 +69,7 @@ Make the directory if necessary.
 ### 4. Reopen your terminal
 
 Close and reopen the terminal.
-You should now be able to run `ssh your-server` and connect using the keys managed by the Windows ssh-agent.exe service.
+You should now be able to run `ssh your-server` and connect using the SSH keys managed by the Windows ssh-agent.exe service.
 
 ## Tip: Using with pageant.exe
 
