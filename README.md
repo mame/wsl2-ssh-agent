@@ -161,7 +161,7 @@ end
 
 * wsl2-ssh-agent starts a server that listens on a UNIX domain socket in WSL2 (by default, $HOME/.ssh/wsl2-ssh-agent.sock).
 * It then invokes a PowerShell.exe child process on the Windows host.
-* The wsl2-ssh-agent process in WSL2 and the PowerShell process in Windows communicate via their stdin/stdout streams, which are connected by the WSL interop layer. The PowerShell process then forwards communication to the Windows ssh-agent.exe service via its named pipe.
+* The wsl2-ssh-agent process in WSL2 and the PowerShell process in Windows communicate via their stdin/stdout streams. These streams are connected by the WSL interop layer. The PowerShell process then forwards communication to the Windows ssh-agent.exe service via its named pipe.
 
 ## Note on Windows OpenSSH Compatibility
 
