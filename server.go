@@ -96,7 +96,6 @@ func (s *server) server(ctx context.Context, cancel func(), requestQueue chan re
 		if err != nil {
 			return
 		}
-		defer rep.terminate()
 
 		// process a pending request if any
 		if pendingRequest != nil && handleRequest(rep, pendingRequest) != nil {
@@ -105,6 +104,7 @@ func (s *server) server(ctx context.Context, cancel func(), requestQueue chan re
 			log.Printf("failed to process request (%d/3)", retryCount)
 			if retryCount == 3 {
 				log.Printf("give up")
+				rep.terminate()
 				break
 			}
 		} else {
@@ -117,6 +117,10 @@ func (s *server) server(ctx context.Context, cancel func(), requestQueue chan re
 				}
 			}
 		}
+
+		// stop this PowerShell.exe before invoking the next one; a deferred
+		// terminate would keep every failed one alive until the server exits
+		rep.terminate()
 
 		select {
 		case <-ctx.Done():
