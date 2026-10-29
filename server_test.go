@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -30,6 +31,10 @@ loop do
 	data = $stdin.read(len.unpack1("N"))
 	exit if data == "fail"
 	sleep if data == "stuck"
+	if data == "stuck-once" && !File.exist?('` + tmpDir + `/stuck-pid')
+		File.write('` + tmpDir + `/stuck-pid', $$.to_s)
+		sleep
+	end
 	$stdout << len + data.upcase
 end
 `
@@ -213,5 +218,48 @@ func TestServerStuck(t *testing.T) {
 	_, err = io.ReadFull(sock, buf)
 	if err != io.EOF {
 		t.Errorf("it should fail with EOF: %v", err)
+	}
+}
+
+func TestServerRetryTerminatesStuckPowerShell(t *testing.T) {
+	path := setupDummyServer(t)
+
+	sock, err := net.Dial("unix", path)
+	if err != nil {
+		t.Fatalf("failed to connect: %v", err)
+	}
+	defer sock.Close()
+
+	readTimeLimitBackup := readTimeLimit
+	readTimeLimit = 500 * time.Millisecond
+	defer func() {
+		readTimeLimit = readTimeLimitBackup
+	}()
+
+	// the first PowerShell.exe gets stuck; the retry answers
+	_, err = sock.Write([]byte("\x00\x00\x00\x0astuck-once"))
+	if err != nil {
+		t.Errorf("failed to communicate: %v", err)
+	}
+
+	buf := make([]byte, 4+10)
+	n, err := io.ReadFull(sock, buf)
+	if err != nil || n != 4+10 || string(buf) != "\x00\x00\x00\x0aSTUCK-ONCE" {
+		t.Fatalf("failed to communicate: %v", err)
+	}
+
+	// the stuck one must have been terminated before the retry
+	pidStr, err := os.ReadFile(filepath.Join(filepath.Dir(path), "stuck-pid"))
+	if err != nil {
+		t.Fatal("no stuck-pid file")
+	}
+	var pid int
+	_, err = fmt.Sscanf(string(pidStr), "%d", &pid)
+	if err != nil {
+		t.Fatal("stuck-pid file is wrong")
+	}
+	err = syscall.Kill(pid, 0)
+	if err != syscall.ESRCH {
+		t.Errorf("PowerShell.exe of the failed attempt (pid %d) is still running: %v", pid, err)
 	}
 }
